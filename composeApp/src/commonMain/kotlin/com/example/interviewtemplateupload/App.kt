@@ -1,47 +1,63 @@
 package com.example.interviewtemplateupload
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.interview.di.appModule
+import com.example.interview.navigation.Destination
+import com.example.interview.navigation.Navigator
+import com.example.interview.navigation.NavigatorImpl
+import com.example.interview.screen.projectlist.ProjectListScreen
+import com.example.interview.screen.projectdetail.ProjectDetailScreen
+import com.example.interview.screen.roomdetail.RoomDetailScreen
+import com.example.interview.screen.addoreditcomment.AddOrEditCommentScreen
+import com.example.interview.screen.addoreditroom.AddOrEditRoomScreen
+import com.example.interview.screen.editproject.EditProjectScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import interviewtemplateupload.composeapp.generated.resources.Res
-import interviewtemplateupload.composeapp.generated.resources.compose_multiplatform
+import org.koin.compose.KoinApplication
+import org.koin.dsl.module
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+    val navController = rememberNavController()
+    val navigator = remember(navController) { NavigatorImpl(navController) }
+
+    // Create a module that provides Navigator
+    val navigationModule = remember(navigator) {
+        module {
+            single<Navigator> { navigator }
+        }
+    }
+
+    KoinApplication(application = {
+        modules(appModule, navigationModule)
+    }) {
+        MaterialTheme {
+            NavHost(
+                navController = navController,
+                startDestination = Destination.ProjectList
+            ) {
+                composable<Destination.ProjectList> {
+                    ProjectListScreen()
+                }
+                composable<Destination.ProjectDetail> {
+                    ProjectDetailScreen()
+                }
+                composable<Destination.RoomDetail> {
+                    RoomDetailScreen()
+                }
+                composable<Destination.AddOrEditComment> {
+                    AddOrEditCommentScreen()
+                }
+                composable<Destination.AddOrEditRoom> {
+                    AddOrEditRoomScreen()
+                }
+                composable<Destination.EditProject> {
+                    EditProjectScreen()
                 }
             }
         }
